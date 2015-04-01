@@ -28,15 +28,41 @@ app.use(function(req, res, next) {
     next();
 });
 
-app.post('/signin', function(req, res) {
-    User.findOne({email: req.body.email, password: req.body.password}, function(err, user) {
+function checkEmailLegality(req, res, next) 
+{
+    if (typeof req.body.email == "undefined")  // feel free to add other email rules here
+        return res.status(403).send('Empty email string');
+    next();
+}
+
+function checkPasswordLegality(req, res, next) 
+{
+    if (typeof req.body.password == "undefined")  // feel free to add other email rules here
+        return res.status(403).send('Empty password string');
+    else if(req.body.password.length < 8)
+        return res.status(403).send('Password legnth should be at least 8!');
+    next();
+}
+
+app.post('/signin', checkEmailLegality, function(req, res) {
+    User.findOne({email: req.body.email}, function(err, user) {
         if (err) {
             res.json({
                 type: false,
                 data: "Error occured: " + err
             });
         } else {
-            if (user) {
+            if (!user) {
+                // incorrect username
+                return res.sendStatus(401);
+            }
+            else if (user.password != req.body.password) {
+                // incorrect password
+                return res.sendStatus(401);
+            }
+            else
+            {
+                console.log(user);
                 var expires = moment().add(60, 'seconds').valueOf();
                 var token = jwt.encode({
                     iss: user.id,
@@ -48,18 +74,13 @@ app.post('/signin', function(req, res) {
                     expires: expires,
                     user: user.toJSON()
                 });
-            } else {
-                res.json({
-                    type: false,
-                    data: "Incorrect email/password"
-                });    
             }
         }
     });
 });
 
-app.post('/signup', function(req, res) {
-    User.findOne({email: req.body.email, password: req.body.password}, function(err, user) {
+app.post('/signup', checkEmailLegality, checkPasswordLegality, function(req, res) {
+    User.findOne({email: req.body.email}, function(err, user) {
         if (err) {
             res.json({
                 type: false,
