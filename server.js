@@ -10,7 +10,7 @@ var app        = express();
 var port = process.env.PORT || 3001;
 var User     = require('./models/User');
 var before_middleware_list = [bodyParser(), log_mw, authenticate, authorize]
-var after_middleware_list = [bodyParser(), log_mw]
+var after_middleware_list = [log_mw]
 
 // Connect to DB
 mongoose.connect('mongodb://krist:krist@ds059471.mongolab.com:59471/express-test');
@@ -158,15 +158,19 @@ function authorize(req, res, next) {
     }
 }
 
-app.use('/users', before_middleware_list);  // before list
-app.get('/users', function(req, res) {  // need x-access-token in http header
+function business_service(req, res, next) {  // need x-access-token in http header
     User.find(function(err, users) {
         if (err)
             res.sendStatus(err);
-        res.json(users)
+        else
+        {
+            res.json(users);
+            next();
+        }
     });
-});
-app.use('/users', after_middleware_list);  //after list...should excute after the main function...need change!
+}
+
+app.get('/users', before_middleware_list, business_service, after_middleware_list);
 
 app.listen(port);
 console.log('Magic happens on port ' + port);
