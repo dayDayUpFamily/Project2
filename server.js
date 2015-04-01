@@ -1,6 +1,6 @@
 // Required Modules
 var express    = require("express");
-var morgan     = require("morgan");
+// var morgan     = require("morgan");
 var bodyParser = require("body-parser");
 var jwt        = require('jwt-simple');
 var mongoose   = require("mongoose");
@@ -20,7 +20,7 @@ app.set('jwtTokenSecret', 'YOUR_SECRET_STRING');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(morgan("dev"));  // request logging
+// app.use(morgan("dev"));  // request logging
 app.use(function(req, res, next) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
@@ -145,7 +145,7 @@ app.get('/users', function(req, res) {  // need x-access-token in http header
         res.json(users)
     });
 });
-app.use('/users', after_middleware_list);  //after list
+app.use('/users', after_middleware_list);  //after list...should excute after the main function...need change!
 
 app.listen(port);
 console.log('Magic happens on port ' + port);
