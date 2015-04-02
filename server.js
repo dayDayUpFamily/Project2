@@ -5,6 +5,7 @@ var bodyParser = require("body-parser");
 var jwt        = require('jwt-simple');
 var mongoose   = require("mongoose");
 var moment     = require("moment");
+var http       = require("http");
 var app        = express();
 
 var port = process.env.PORT || 3001;
@@ -63,7 +64,7 @@ app.post('/signin', checkEmailLegality, function(req, res) {
             else
             {
                 console.log(user);
-                var expires = moment().add(60, 'seconds').valueOf();
+                var expires = moment().add(600, 'seconds').valueOf();
                 var token = jwt.encode({
                     iss: user.id,
                     exp: expires
@@ -158,15 +159,27 @@ function authorize(req, res, next) {
     }
 }
 
-function business_service(req, res, next) {  // need x-access-token in http header
-    User.find(function(err, users) {
-        if (err)
-            res.sendStatus(err);
-        else
-        {
-            res.json(users);
+function business_service(req, res, next) {  // need x-access-token in http header, and start business_service.js
+    // User.find(function(err, users) {
+    //     if (err)
+    //         res.sendStatus(err);
+    //     else
+    //     {
+    //         res.json(users);
+    //         next();
+    //     }
+    // });
+    var options = {  // mapping
+        host: 'localhost',
+        port: 8888,
+        path: '/'
+    };
+    http.get(options, function(resp){  // make request to the business service
+        resp.on('data', function(chunk){
+            // console.log(chunk);
+            res.send(chunk);  // return the response to the client
             next();
-        }
+        });
     });
 }
 
