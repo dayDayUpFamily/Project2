@@ -12,8 +12,8 @@ var User       = require('./models/User');
 var app = express();
 var redis_client = redis.createClient();
 var port = process.env.PORT || 3001;
-var before_middleware_list = [bodyParser(), log_mw, authenticate, authorize]
-var after_middleware_list = [log_mw]
+var before_middleware_list = [bodyParser(), log_mw, authenticate, authorize, etag_before]
+var after_middleware_list = [log_mw, etag_after]
 
 // Connect to DB
 mongoose.connect('mongodb://krist:krist@ds059471.mongolab.com:59471/express-test');
@@ -170,30 +170,37 @@ function authorize(req, res, next) {
 // }
 
 function etag_before(req, res, next) {  // check whether client etag and server etag are the same
-    var cEtag = req.headers['If-None-Match'];
+    console.log("entering etag_before");
+    var cEtag = req.headers['if-none-match'];
+    console.log("cEtag: "+cEtag);
     var sEtag;
     redis_client.get(req.url, function(err, reply) {  
         // reply is null when the key is missing
         sEtag = reply;
-    
+        console.log("sEtag: "+sEtag);
         if(req.method == "GET") // if it's a get request
         {
+            // console.log("182");
             if(sEtag) // server Etag is not empty
             {
+                // console.log("185");
                 if(cEtag)  // client Etag is not empty
                 {
+                    // console.log("188");
                     if(cEtag == sEtag)
                     {
                         console.log("You have requested this and it's not changed!");
-                        res.status(304).send("You have requested this and it's not changed!");
-                        return;
+                        // return res.status(304).send("You have requested this and it's not changed!");
+                        return res.send("You have requested this and it's not changed!");
                     }
                 }
             }
             else  // server etag is empty, need to add to redis
             {
+                console.log("199");
                 req.etagRedisFlag = true;
             }
+            console.log("202");
             next();
         }
         if(req.method == "DELETE" || req.method == "POST" || req.method == "PUT") // if it's a delete/post/put request
@@ -222,13 +229,20 @@ function etag_before(req, res, next) {  // check whether client etag and server 
 function updateEtagInRedis(key, value)
 {
     redis_client.set(key, value);
+    console.log("redis: setting "+key+" to "+value);
     return;
 }
 
 function etag_after(req, res, next)  // update etag in redis
 {
+    console.log("entering etag_after");
+    // console.log(res._headers['etag']);
+    var ori_etag = res._headers['etag'];
+    // console.log(ori_etag.slice(1, ori_etag.length-1));
     if(req.etagRedisFlag)
-        updateEtagInRedis(req.url, res._headers['etag'])  // hashing the key should be better...but I'm lazy
+    {
+        updateEtagInRedis(req.url, ori_etag.slice(1, ori_etag.length-1));  // hashing the key should be better...but I'm lazy
+    }
     next();
 }
 
