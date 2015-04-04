@@ -6,10 +6,12 @@ var jwt        = require('jwt-simple');
 var mongoose   = require("mongoose");
 var moment     = require("moment");
 var http       = require("http");
-var app        = express();
+var redis      = require("redis");
+var User       = require('./models/User');
 
+var app = express();
+var redis_client = redis.createClient();
 var port = process.env.PORT || 3001;
-var User     = require('./models/User');
 var before_middleware_list = [bodyParser(), log_mw, authenticate, authorize]
 var after_middleware_list = [log_mw]
 
@@ -18,6 +20,9 @@ mongoose.connect('mongodb://krist:krist@ds059471.mongolab.com:59471/express-test
 
 // set secret for jwt
 app.set('jwtTokenSecret', 'YOUR_SECRET_STRING');
+
+// use strong etags
+app.set('etag', 'strong')
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -159,6 +164,74 @@ function authorize(req, res, next) {
     }
 }
 
+// function getServerEtagFromRedis(key)
+// {
+//     return redis_client.get(key);
+// }
+
+function etag_before(req, res, next) {  // check whether client etag and server etag are the same
+    var cEtag = req.headers['If-None-Match'];
+    var sEtag;
+    redis_client.get(req.url, function(err, reply) {  
+        // reply is null when the key is missing
+        sEtag = reply;
+    
+        if(req.method == "GET") // if it's a get request
+        {
+            if(sEtag) // server Etag is not empty
+            {
+                if(cEtag)  // client Etag is not empty
+                {
+                    if(cEtag == sEtag)
+                    {
+                        console.log("You have requested this and it's not changed!");
+                        res.status(304).send("You have requested this and it's not changed!");
+                        return;
+                    }
+                }
+            }
+            else  // server etag is empty, need to add to redis
+            {
+                req.etagRedisFlag = true;
+            }
+            next();
+        }
+        if(req.method == "DELETE" || req.method == "POST" || req.method == "PUT") // if it's a delete/post/put request
+        {
+            if(sEtag) // server Etag is not empty
+            {
+                if(cEtag)  // client Etag is not empty
+                {
+                    if(cEtag == sEtag)
+                    {
+                        req.etagRedisFlag = true;
+                        next();  // continue operation
+                    }
+                }
+            }
+            else  // server etag is empty, need to add to redis
+            {
+                req.etagRedisFlag = true;
+                if(cEtag)  // if server Etag is empty but client Etag is not empty
+                    next();
+            }
+        }
+    });
+}
+
+function updateEtagInRedis(key, value)
+{
+    redis_client.set(key, value);
+    return;
+}
+
+function etag_after(req, res, next)  // update etag in redis
+{
+    if(req.etagRedisFlag)
+        updateEtagInRedis(req.url, res._headers['etag'])  // hashing the key should be better...but I'm lazy
+    next();
+}
+
 function business_service(req, res, next) {  // need x-access-token in http header, and start business_service.js
     // User.find(function(err, users) {
     //     if (err)
@@ -169,6 +242,7 @@ function business_service(req, res, next) {  // need x-access-token in http head
     //         next();
     //     }
     // });
+
     var options = {  // mapping
         host: 'localhost',
         port: 8888,
@@ -177,7 +251,8 @@ function business_service(req, res, next) {  // need x-access-token in http head
     http.get(options, function(resp){  // make request to the business service
         resp.on('data', function(chunk){
             // console.log(chunk);
-            res.send(chunk);  // return the response to the client
+            res.send(chunk);  // return the response to the client (A strong etag is included in the header)
+            // console.log(res._headers['etag']);
             next();
         });
     });
