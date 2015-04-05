@@ -4,6 +4,12 @@
 var redis      = require("redis");
 var redis_client = redis.createClient();
 
+function updateEtagInRedis (key, value) {
+    redis_client.set(key, value);
+    console.log("redis: setting " + key + " to " + value);
+    return;
+}
+
 module.exports = {
 
     etag_before: function (req, res, next) {  // check whether client etag and server etag are the same
@@ -58,12 +64,6 @@ module.exports = {
                 }
             }
         });
-    },
-
-    updateEtagInRedis: function (key, value) {
-        redis_client.set(key, value);
-        console.log("redis: setting " + key + " to " + value);
-        return;
     },
 
     etag_after: function (req, res, next)  // update etag in redis

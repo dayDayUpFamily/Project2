@@ -1,15 +1,11 @@
 // Required Modules
 var express    = require("express");
-// var morgan     = require("morgan");
 var bodyParser = require("body-parser");
-var jwt        = require('jwt-simple');
 var mongoose   = require("mongoose");
-var moment     = require("moment");
 var http       = require("http");
-var User       = require('./models/User');
 
 var app = express();
-var port = process.env.PORT || 3001;
+var port = process.env.PORT || 3333;
 
 // yun add
 var logging         = require('./middleware/logging');
@@ -18,6 +14,9 @@ var check           = require('./middleware/check');
 var signin_service  = require('./middleware/signin_service');
 var signup_service  = require('./middleware/signup_service');
 var etag            = require('./middleware/etag');
+var dyn_config      = require('./middleware/dyn_config');
+var MW_before       = require('./models/MW_before');
+var MW_after        = require('./models/MW_after');
 
 var before_middleware_list = [bodyParser(), logging.log_before, auth.authenticate, auth.authorize, etag.etag_before]
 var after_middleware_list = [logging.log_after, etag.etag_after]
@@ -71,7 +70,81 @@ function business_service(req, res, next) {  // need x-access-token in http head
     });
 }
 
-app.get('/users', before_middleware_list, business_service, after_middleware_list);
 
+app.use('/users', function (req, res, next) {
+    req.cur_service = "business_service";
+    next();
+});
+
+app.use('/users', dyn_config.config_before_mws, business_service, dyn_config.config_after_mws);
+
+
+/*
+// add mw to before list or after list
+// create a before middleware for a service
+app.post('/mw_before', function(req, res) {
+    MW_before.findOne({service_name: req.body.service_name, mw_name: req.body.mw_name}, function(err, mw) {
+        if (err) {
+            res.json({
+                type: false,
+                data: "Error occured: " + err
+            });
+        } else {
+            if (mw) {
+                res.json({
+                    type: false,
+                    data: "The before middleware for the service already exists!"
+                });
+            } else {
+                var instance = new MW_before();
+                instance.service_name = req.body.service_name;
+                instance.mw_name = req.body.mw_name;
+                instance.priority = req.body.priority;
+                instance.enable = req.body.enable || false;
+
+                instance.save(function(err, mw) {
+                    if (err)
+                        res.sendStatus(err);
+                    res.json({ message: 'Create a before middleware for the service' });
+                    console.log(mw);
+                });
+            }
+        }
+    });
+});
+
+app.post('/mw_after', function(req, res) {
+    MW_after.findOne({service_name: req.body.service_name, mw_name: req.body.mw_name}, function(err, mw) {
+        if (err) {
+            res.json({
+                type: false,
+                data: "Error occured: " + err
+            });
+        } else {
+            if (mw) {
+                res.json({
+                    type: false,
+                    data: "The after middleware for the service already exists!"
+                });
+            } else {
+                var instance = new MW_after();
+                instance.service_name = req.body.service_name;
+                instance.mw_name = req.body.mw_name;
+                instance.priority = req.body.priority;
+                instance.enable = req.body.enable || false;
+
+                instance.save(function(err, mw) {
+                    if (err)
+                        res.sendStatus(err);
+                    res.json({ message: 'Create a after middleware for the service' });
+                    console.log(mw);
+                });
+            }
+        }
+    });
+});
+*/
+
+//app.get('/users', before_middleware_list, business_service, after_middleware_list);
 app.listen(port);
 console.log('Magic happens on port ' + port);
