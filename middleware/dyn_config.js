@@ -44,9 +44,6 @@ function configurableMiddleWare(req, res, next) {
             case 'authorize':
                 middleware = auth.authorize;
                 break;
-            case 'service':
-                middleware = req.cur_service;
-                break;
             case 'log_after':
                 middleware = logging.log_after;
                 //middleware = log_after;
