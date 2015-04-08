@@ -13,9 +13,9 @@ var configArray = [];
 // Function to sort the order of the middleware to be executed
 var sortConfig = function(configArray){
     var sortable = [];
-    console.log("size: " + configArray.length);
+    // console.log("size: " + configArray.length);
     for(i = 0; i < configArray.length; i++) {
-        console.log(configArray[i].mw_name);
+        // console.log(configArray[i].mw_name);
         if(configArray[i].enable == true) {
             sortable.push([configArray[i].mw_name, configArray[i].priority]);
         }
@@ -29,7 +29,7 @@ function configurableMiddleWare(req, res, next) {
     var operations = [];
     var middleware;
     var sortedConfig = sortConfig(configArray);
-    console.log("------- " + "begin sorting" + " -------");
+    // console.log("------- " + "begin sorting" + " -------");
     // push each middleware you want to run
     sortedConfig.forEach(function(fn) {
 
@@ -55,14 +55,15 @@ function configurableMiddleWare(req, res, next) {
                 middleware = etag.etag_after;
                 break;
         }
-        console.log(fn[0]);
-        console.log(middleware);
+        // console.log(fn[0]);
+        // console.log(middleware);
 
         operations.push(middleware.bind(null, req, res)); // could use fn.bind(null, req, res) to pass in vars     });
 
-    })
+    });
 
-    console.log('middleware list sorted');
+    // console.log('middleware list sorted');
+    // console.log(operations.length);
     // now actually invoke the middleware in series
     async.series(operations, function(err) {
         if(err) {
@@ -92,13 +93,14 @@ module.exports = {
                     configArray.push(mw);
                 })
                 configurableMiddleWare(req, res, next);
+                // console.log('before_middleware get executed');
             }
         });
     },
 
     config_after_mws: function (req, res, next)
     {
-        console.log("init after mw list for current service:" + req.cur_service );
+        console.log("init after mw list for current service: " + req.cur_service );
         configArray = [];
         MW_after.find({service_name: req.cur_service}, function(err, middlewares) {
             if (err)
@@ -110,6 +112,7 @@ module.exports = {
                 }
                 )
                 configurableMiddleWare(req, res, next);
+                // console.log('after_middleware get executed\n');
             }
         });
     }

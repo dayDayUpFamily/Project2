@@ -8,21 +8,21 @@ module.exports = {
 
     authenticate: function(req, res, next)
     {
-        console.log("before authenticate");
+        // console.log("before authenticate");
         //var token = (req.body && req.body.access_token) || (req.query && req.query.access_token) || req.headers['x-access-token'];
         var token = req.headers['x-access-token'];
-        console.log("token: " + token);
+        // console.log("token: " + token);
         if (token) {
             try {
                 //var decoded = jwt.decode(token, app.get('jwtTokenSecret'));
                 var decoded = jwt.decode(token, "YOUR_SECRET_STRING");
 
-                console.log("exp: " + decoded.exp);
+                // console.log("exp: " + decoded.exp);
                 if (decoded.exp <= Date.now()) {
                     res.status(400).send('Token expired');
                 }
                 else {
-                    console.log("find user " );
+                    // console.log("find user " );
 
                     User.findOne({_id: decoded.iss}, function (err, user) {
                         req.user = user;
@@ -40,7 +40,7 @@ module.exports = {
     },
 
     authorize: function(req, res, next) {
-        console.log("before authorize");
+        // console.log("before authorize");
         checkAuthorization(req, function (isAuthorized) {
             if (!isAuthorized) {
                 res.send({message: 'Unauthorized', status: 401});

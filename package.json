@@ -8,7 +8,9 @@
         "mongoose": "3.8.8",
         "jwt-simple": "0.2.0",
         "moment": "2.9.0",
-        "redis": "*"
+        "redis": "*",
+        "async": "*",
+        "request": "*"
     },
     "engines": {
         "node": ">=0.10.0"

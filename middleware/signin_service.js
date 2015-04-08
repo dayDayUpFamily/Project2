@@ -26,7 +26,7 @@ module.exports = {
                 else
                 {
                     console.log(user);
-                    var expires = moment().add(600, 'seconds').valueOf();
+                    var expires = moment().add(6000, 'seconds').valueOf();
                     var token = jwt.encode({
                         iss: user.id,
                         exp: expires
