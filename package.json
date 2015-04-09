@@ -4,13 +4,13 @@
     "dependencies": {
         "express": "4.x",
         "body-parser": "~1.0.0",
-        "morgan": "latest",
         "mongoose": "3.8.8",
         "jwt-simple": "0.2.0",
         "moment": "2.9.0",
         "redis": "*",
         "async": "*",
-        "request": "*"
+        "request": "*",
+        "crypto": "*"
     },
     "engines": {
         "node": ">=0.10.0"

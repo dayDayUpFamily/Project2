@@ -1,31 +1,57 @@
 var request    = require("request");
 
-exports.getUsers = function(req, res, next) {  // need x-access-token in http header, and start business_service.js
-    request({
-        uri: "http://127.0.0.1:8888/private/users",
-        method: "GET",
-    }, function(error, response, body) {
-        console.log("business_service succeed!");
-        res.send(body);
-        next();
-    });
-}
-
-exports.getOneUser = function(req, res, next) {
-    request({
-        uri: "http://127.0.0.1:8888/private/user/"+req.params.id,
-        method: "GET",
-    }, function(error, response, body) {
-        console.log("business_service succeed!");
-        res.send(body);
-        next();
-    });
-}
-
-exports.putUser = function(req, res, next)
+var urlTranslate = function(publicUrl)
 {
+    // define the translation rule here
+    return publicUrl.replace("public", "private");
+}
+
+var getUsers = function(req, res, next)
+{  // need x-access-token in http header, and start business_service.js
+    if(req.before_mw_failure)  // if there was error before, skip
+    {
+        console.log("skip business_service");
+        return next();
+    }
+    var publicUrl = req.url;
     request({
-        uri: "http://127.0.0.1:8888/private/user/"+req.params.id,
+        uri: "http://127.0.0.1:8888"+urlTranslate(publicUrl),
+        method: "GET",
+    }, function(error, response, body) {
+        console.log("business_service succeed!");
+        res.send(body);
+        next();
+    });
+}
+
+var getOneUser = function(req, res, next)
+{
+    if(req.before_mw_failure)  // if there was error before, skip
+    {
+        console.log("skip business_service");
+        return next();
+    }
+    var publicUrl = req.url;
+    request({
+        uri: "http://127.0.0.1:8888"+urlTranslate(publicUrl),
+        method: "GET",
+    }, function(error, response, body) {
+        console.log("business_service succeed!");
+        res.send(body);
+        next();
+    });
+}
+
+var putUser = function(req, res, next)
+{
+    if(req.before_mw_failure)  // if there was error before, skip
+    {
+        console.log("skip business_service");
+        return next();
+    }
+    var publicUrl = req.url;
+    request({
+        uri: "http://127.0.0.1:8888"+urlTranslate(publicUrl),
         method: "PUT",
         form: {
             email:req.body.email,
@@ -43,10 +69,16 @@ exports.putUser = function(req, res, next)
     });
 }
 
-exports.deleteUser = function(req, res, next)
+var deleteUser = function(req, res, next)
 {
+    if(req.before_mw_failure)  // if there was error before, skip
+    {
+        console.log("skip business_service");
+        return next();
+    }
+    var publicUrl = req.url;
     request({
-        uri: "http://127.0.0.1:8888/private/user/"+req.params.id,
+        uri: "http://127.0.0.1:8888"+urlTranslate(publicUrl),
         method: "DELETE"
     }, function(error, response, body) {
         if(error) {
@@ -57,4 +89,12 @@ exports.deleteUser = function(req, res, next)
             next();
         }
     });
+}
+
+module.exports = {
+    urlTranslate:urlTranslate,
+    getUsers:getUsers,
+    getOneUser:getOneUser,
+    putUser:putUser,
+    deleteUser:deleteUser
 }

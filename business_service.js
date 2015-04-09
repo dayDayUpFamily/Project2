@@ -55,14 +55,16 @@ app.put('/private/user/:id', function (req, res) {
     // var newData = req.body;
     // var fields = ['email', 'password', 'isAdmin'];
     var newData = {email:req.body.email, password:req.body.password, isAdmin:req.body.isAdmin};
+    console.log(newData);
     var options = {new: true};
     // var userDataProjected = lodash.pick(newData, fields);
-    User.findOneAndUpdate(userId, newData, options, function (err, user) {
+    User.findOneAndUpdate({"_id":userId}, newData, options, function (err, user) {
+
         if(err)
             res.sendStatus(err);
         else
         {
-            console.log(user);
+            console.log("user "+userId+" update");
             res.sendStatus(200);
             // next();
         }
