@@ -33,6 +33,11 @@ function getEtagFromResponseAndUpdate (publicUrl, callback) {
 module.exports = {
 
     etag_before: function (req, res, next) {  // check whether client etag and server etag are the same
+        if(req.before_mw_failure)  // if there was error before, skip
+        {
+            console.log("skip etag_before");
+            return next();
+        }
         console.log("entering etag_before");
         var cEtag = req.headers['if-none-match'];
         console.log("cEtag: " + cEtag);
@@ -47,12 +52,12 @@ module.exports = {
                 {
                     // console.log("185");
                     if (cEtag) { // client Etag is not empty
-
                         // console.log("188");
                         if (cEtag == sEtag) {
                             console.log("You have requested this and it's not changed!");
                             // return res.status(304).send("You have requested this and it's not changed!");
-                            return res.send("You have requested this and it's not changed!");
+                            req.before_mw_failure = true;
+                            res.send("You have requested this and it's not changed!");
                         }
                     }
                 }
@@ -62,7 +67,7 @@ module.exports = {
                     req.etagRedisFlag = "create";
                 }
                 console.log("202");
-                next();
+                // next();
             }
             if (req.method == "DELETE" || req.method == "PUT") // if it's a delete/put request
             {
@@ -72,30 +77,38 @@ module.exports = {
                     if (cEtag && cEtag==sEtag)  // client Etag is valid
                     {
                         req.etagRedisFlag = "update";
-                        next();  // continue operation
+                        // next();  // continue operation
                     }
                     else
                     {
                         req.before_mw_failure = true;
-                        return res.send("please provide a valid etag!");
+                        console.log("etag fail");
+                        res.send("please provide a valid etag!");
                     }
                 }
                 else  // server etag is empty, need to add to redis
                 {
                     // req.etagRedisFlag = true;
                     req.before_mw_failure = true;
-                    return res.send("etag is not in redis, please getOneUser first");
+                    console.log("etag fail");
+                    res.send("etag is not in redis, please getOneUser first");
                     // if (cEtag)  // if server Etag is empty but client Etag is not empty
                     //     next();
                 }
                 // res.send("need to provide the latest etag!");
                 // next();
             }
+            next();
         });
     },
 
     etag_after: function (req, res, next)  // create or update etag in redis
     {
+        if(req.before_mw_failure)  // if there was error before, skip
+        {
+            console.log("skip etag_after");
+            return next();
+        }
         console.log("entering etag_after");
         // console.log(req.etagRedisFlag);
         // var ori_etag = res._headers['etag'];
