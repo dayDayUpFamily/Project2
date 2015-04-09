@@ -19,7 +19,7 @@ var dyn_config      = require('./middleware/dyn_config');
 var MW_before       = require('./models/MW_before');
 var MW_after        = require('./models/MW_after');
 var mapping         = require('./mapping');
-
+var Nonce           = require('./middleware/nonce');
 // var before_middleware_list = [bodyParser(), logging.log_before, auth.authenticate, auth.authorize, etag.etag_before]
 // var after_middleware_list = [logging.log_after, etag.etag_after]
 

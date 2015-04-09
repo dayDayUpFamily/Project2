@@ -7,7 +7,7 @@ var logging     = require('./logging');
 var etag        = require('./etag');
 var MW_before   = require('../models/MW_before');
 var MW_after    = require('../models/MW_after');
-
+var Nonce        = require('./nonce');
 var configArray = [];
 
 // Function to sort the order of the middleware to be executed
@@ -53,6 +53,9 @@ function configurableMiddleWare(req, res, next) {
                 break;
             case 'etag_after':
                 middleware = etag.etag_after;
+                break;
+            case 'nonce':
+                middleware = Nonce.check_nonce;
                 break;
         }
         // console.log(fn[0]);
