@@ -1,14 +1,33 @@
 /**
  * Created by yun on 4/4/15.
  */
-var redis      = require("redis");
+var request      = require("request");
+var crypto       = require("crypto");
+var redis        = require("redis");
 var redis_client = redis.createClient();
-var mapping = require('../mapping');
+var mapping      = require("../mapping");
 
 function updateEtagInRedis (key, value) {
     redis_client.set(key, value);
     console.log("redis: setting the etag of " + key + " to " + value);
     return;
+}
+
+function getEtagFromResponseAndUpdate (publicUrl, callback) {
+    request({
+        uri: "http://127.0.0.1:8888"+mapping.urlTranslate(publicUrl),
+        method: "GET",
+    }, function(error, response, body) {
+        // console.log(crypto.createHash('md5').update(body).digest('base64'));
+        // console.log("http://127.0.0.1:8888"+mapping.urlTranslate(publicUrl));
+        // console.log("body: "+body);
+        var newEtag = crypto.createHash('md5').update(body).digest('base64');
+        callback(publicUrl, newEtag);
+        // return crypto.createHash('md5').update(body).digest('base64'); 
+        // console.log(response);
+        // console.log("***etag: "+response._headers['etag']);
+    });
+
 }
 
 module.exports = {
@@ -47,7 +66,7 @@ module.exports = {
             }
             if (req.method == "DELETE" || req.method == "PUT") // if it's a delete/put request
             {
-                console.log("49");
+                // console.log("49");
                 if (sEtag) // server Etag is not empty
                 {
                     if (cEtag && cEtag==sEtag)  // client Etag is valid
@@ -78,16 +97,17 @@ module.exports = {
     etag_after: function (req, res, next)  // create or update etag in redis
     {
         console.log("entering etag_after");
-        // console.log(res._headers['etag']);
-        var ori_etag = res._headers['etag'];
+        // console.log(req.etagRedisFlag);
+        // var ori_etag = res._headers['etag'];
         // console.log(ori_etag.slice(1, ori_etag.length-1));
         if (req.etagRedisFlag) {
             if (req.etagRedisFlag=="create")
-                updateEtagInRedis(req.url, ori_etag.slice(1, ori_etag.length - 1));  // hashing the key should be better...but I'm lazy
+                updateEtagInRedis(req.url, res._headers['etag']);  // hashing the key should be better...but I'm lazy
             if (req.etagRedisFlag=="update")
             {
                 // update two etags: 1. getall; 2.get one
-                updateEtagInRedis(req.url, ori_etag.slice(1, ori_etag.length - 1));  // hashing the key should be better...but I'm lazy
+                getEtagFromResponseAndUpdate(req.url, updateEtagInRedis);
+                // updateEtagInRedis(req.url, newEtag);  // hashing the key should be better...but I'm lazy
             }
         }
         next();

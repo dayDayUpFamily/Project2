@@ -4,6 +4,7 @@ var bodyParser = require("body-parser");
 var mongoose   = require("mongoose");
 // var http       = require("http");
 var request    = require("request");
+var crypto     = require("crypto");
 
 var app = express();
 var port = process.env.PORT || 3001;
@@ -30,7 +31,10 @@ mongoose.connect('mongodb://krist:krist@ds059471.mongolab.com:59471/express-test
 app.set('jwtTokenSecret', 'YOUR_SECRET_STRING');
 
 // use strong etags
-app.set('etag', 'strong')
+// app.set('etag', 'strong')
+
+// use our own hash function to generate etag 
+app.set('etag', function(body, encoding){return crypto.createHash('md5').update(body, encoding).digest('base64') });
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -46,7 +50,8 @@ app.post('/signin', check.checkEmailLegality, signin_service.signin);
 app.post('/signup', check.checkEmailLegality, check.checkPasswordLegality, signup_service.signup);
 
 
-app.use('/public/*', function (req, res, next) {
+app.use('/public/*', function (req, res, next)
+{
     if (req.method=="GET")
     {
         // if (req.url=="/public/users")
