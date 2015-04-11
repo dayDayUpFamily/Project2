@@ -10,7 +10,8 @@
         "redis": "*",
         "async": "*",
         "request": "*",
-        "crypto": "*"
+        "crypto": "*" ,
+        "aws-sdk":"*"
     },
     "engines": {
         "node": ">=0.10.0"

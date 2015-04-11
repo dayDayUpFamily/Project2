@@ -16,7 +16,7 @@ function updateEtagInRedis (key, value) {
 function getEtagFromResponseAndUpdate (publicUrl, callback) {
     request({
         uri: "http://127.0.0.1:8888"+mapping.urlTranslate(publicUrl),
-        method: "GET",
+        method: "GET"
     }, function(error, response, body) {
         // console.log(crypto.createHash('md5').update(body).digest('base64'));
         // console.log("http://127.0.0.1:8888"+mapping.urlTranslate(publicUrl));
