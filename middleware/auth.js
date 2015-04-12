@@ -16,7 +16,7 @@ module.exports = {
         // console.log("before authenticate");
         //var token = (req.body && req.body.access_token) || (req.query && req.query.access_token) || req.headers['x-access-token'];
         var token = req.headers['x-access-token'];
-        // console.log("token: " + token);
+         console.log("token: " + token);
         if (token) {
             try {
                 //var decoded = jwt.decode(token, app.get('jwtTokenSecret'));
@@ -41,7 +41,7 @@ module.exports = {
                 console.log(err);
                 req.before_mw_failure = true;
                 res.status(403).send('Bad token');
-                next();
+                next(new Error('Bad token'));
             }
         } else {
             req.before_mw_failure = true;

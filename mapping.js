@@ -16,7 +16,7 @@ var getUsers = function(req, res, next)
     var publicUrl = req.url;
     request({
         uri: "http://127.0.0.1:8888"+urlTranslate(publicUrl),
-        method: "GET",
+        method: "GET"
     }, function(error, response, body) {
         console.log("business_service succeed!");
         res.send(body);

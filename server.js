@@ -21,6 +21,7 @@ var MW_before       = require('./models/MW_before');
 var MW_after        = require('./models/MW_after');
 var mapping         = require('./mapping');
 var Nonce           = require('./middleware/nonce');
+var errorhandler    =require('./middleware/errorhandler');
 // var before_middleware_list = [bodyParser(), logging.log_before, auth.authenticate, auth.authorize, etag.etag_before]
 // var after_middleware_list = [logging.log_after, etag.etag_after]
 
@@ -50,6 +51,7 @@ app.post('/signin', check.checkEmailLegality, signin_service.signin);
 app.post('/signup', check.checkEmailLegality, check.checkPasswordLegality, signup_service.signup);
 
 
+
 app.use('/public/*', function (req, res, next)
 {
     if (req.method=="GET")
@@ -77,6 +79,7 @@ app.get('/public/user/:id', dyn_config.config_before_mws, mapping.getOneUser, dy
 app.put('/public/user/:id', dyn_config.config_before_mws, mapping.putUser, dyn_config.config_after_mws);
 app.delete('/public/user/:id', dyn_config.config_before_mws, mapping.deleteUser, dyn_config.config_after_mws);
 
+app.use(errorhandler);
 
 app.listen(port);
 console.log('Magic happens on port ' + port);

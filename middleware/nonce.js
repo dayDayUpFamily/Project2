@@ -8,13 +8,14 @@ module.exports = {
             if(!reply) {
                 redis_client.set(req_nonce, 1);
                 console.log('get new nonce');
-                next();
+                return next();
+
             }
             else {
-                res.sendStatus(404);
+                //res.sendStatus(404);
                 console.log("dupilcate request");
+                return;
             }
         })
     }
-
 }
