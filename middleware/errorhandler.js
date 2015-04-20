@@ -3,11 +3,15 @@
  */
 
 var AWS = require('aws-sdk');
-var sns = new AWS.SNS({credentials: new AWS.SharedIniFileCredentials(), region: 'us-west-2'});
+var sns = new AWS.SNS({credentials: new AWS.SharedIniFileCredentials(), region: 'us-east-1'});
+var logging = require('./logging')
+
 module.exports = function (err, req, res, next) {
     console.log('Error at time:', new Date());
     console.log(err);
-    publish(err.message);
+    logging.logging2sqs("myQueue", "ERROR: "+req.url+"  "+req.method+"  "+err);  // error logging
+    // publish(err.message);  // SNS
+
     // console.log("headers   "+res.headers);
    /* res.status(err.statusCode || err.status || 500);
     res.json({

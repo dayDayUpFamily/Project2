@@ -53,13 +53,13 @@ function configurableMiddleWare(req, res, next) {
                 break;
             case 'etag_after':
                 middleware = etag.etag_after;
-                break;/*
+                break;
             case 'nonce':
                 middleware = Nonce.check_nonce;
-                break;*/
+                break;
         }
         // console.log(fn[0]);
-         console.log(middleware);
+        // console.log(middleware);
 
         operations.push(middleware.bind(null, req, res)); // could use fn.bind(null, req, res) to pass in vars     });
 

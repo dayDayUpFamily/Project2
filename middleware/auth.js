@@ -8,15 +8,15 @@ module.exports = {
 
     authenticate: function(req, res, next)
     {
-        if(req.before_mw_failure)  // if there was error before, skip
-        {
-            console.log("skip authenticate");
-            return next();
-        }
+        // if(req.before_mw_failure)  // if there was error before, skip
+        // {
+        //     console.log("skip authenticate");
+        //     return next();
+        // }
         // console.log("before authenticate");
         //var token = (req.body && req.body.access_token) || (req.query && req.query.access_token) || req.headers['x-access-token'];
         var token = req.headers['x-access-token'];
-         console.log("token: " + token);
+        // console.log("token: " + token);
         if (token) {
             try {
                 //var decoded = jwt.decode(token, app.get('jwtTokenSecret'));
@@ -24,10 +24,10 @@ module.exports = {
 
                 // console.log("exp: " + decoded.exp);
                 if (decoded.exp <= Date.now()) {
-                    req.before_mw_failure = true;
-                    console.log(25);
+                    // req.before_mw_failure = true;
+                    // console.log(25);
                     res.status(400).send('Token expired');
-                    next();
+                    return next(new Error('Token expired'));
                 }
                 else {
                     // console.log("find user " );
@@ -39,34 +39,35 @@ module.exports = {
                 }
             } catch (err) {
                 console.log(err);
-                req.before_mw_failure = true;
+                // req.before_mw_failure = true;
                 res.status(403).send('Bad token');
-                next(new Error('Bad token'));
+                return next(new Error('Bad token'));
             }
         } else {
-            req.before_mw_failure = true;
+            // req.before_mw_failure = true;
             res.status(403).send('No token');
-            next();
+            return next(new Error('No token'));
         }
     },
 
     authorize: function(req, res, next) {
         // console.log("before authorize");
-        if(req.before_mw_failure)  // if there was error before, skip
-        {
-            console.log("skip authorize");
-            return next();
-        }
+        // if(req.before_mw_failure)  // if there was error before, skip
+        // {
+        //     console.log("skip authorize");
+        //     return next();
+        // }
         checkAuthorization(req, function (isAuthorized) {
             if (!isAuthorized) {
-                req.before_mw_failure = true;
+                // req.before_mw_failure = true;
                 res.send({message: 'Unauthorized', status: 401});
                 console.log(req.user.email + ' fail the authorization');
+                return next(new Error('Authorization failed'));
             }
             else {
                 console.log(req.user.email + ' pass the authorization');
+                next();
             }
-            next();
         });
 
         function checkAuthorization(req, callback) {
