@@ -1,19 +1,19 @@
 {
-    "name": "angular-restful-auth",
-    "version": "0.0.1",
-    "dependencies": {
-        "express": "4.x",
-        "body-parser": "~1.0.0",
-        "mongoose": "3.8.8",
-        "jwt-simple": "0.2.0",
-        "moment": "2.9.0",
-        "redis": "*",
-        "async": "*",
-        "request": "*",
-        "crypto": "*" ,
-        "aws-sdk":"*"
-    },
-    "engines": {
-        "node": ">=0.10.0"
-    }
+  "name": "angular-restful-auth",
+  "version": "0.0.1",
+  "dependencies": {
+    "async": "*",
+    "aws-sdk": "*",
+    "body-parser": "~1.0.0",
+    "crypto": "*",
+    "express": "^4.12.3",
+    "jwt-simple": "0.2.0",
+    "moment": "2.9.0",
+    "mongoose": "3.8.8",
+    "redis": "*",
+    "request": "*"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  }
 }

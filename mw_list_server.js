@@ -18,7 +18,7 @@ app.get('/mwlist/:biz_name', function (req, res) {
   afterList = [];
   // console.log(req.params.biz_name);
   MW_before.find({service_name: req.params.biz_name}, function(err, middlewares) {
-    // console.log(middlewares);
+     console.log("before list",middlewares);
     if (err)
       return res.status(403).send('query middleware configuaration error');
     else
@@ -31,6 +31,7 @@ app.get('/mwlist/:biz_name', function (req, res) {
   });
   // console.log(25);
   MW_after.find({service_name: req.params.biz_name}, function(err, middlewares) {
+    console.log("after list",middlewares);
     if (err)
       return res.status(403).send('query middleware configuaration error');
     else
@@ -45,6 +46,27 @@ app.get('/mwlist/:biz_name', function (req, res) {
 });
 
 app.put('/mwlist/:biz_name/:mw_name/:new_priority', function (req, res) {
+  var service_name=req.params.biz_name;
+  var mw_name=req.params.mw_name;
+  var new_priority=req.params.new_priority;
+  MW_before.update({service_name: service_name,mw_name:mw_name},{$set:{"priority":new_priority}}, function(err, middlewares) {
+    console.log("before list",middlewares);
+    if (err)
+      return res.status(403).send('query middleware configuaration error');
+    else
+    {
+      //return res.status(200).send("update success");
+    }
+  });
+  MW_after.update({service_name: service_name,mw_name:mw_name},{$set:{"priority":new_priority}}, function(err, middlewares) {
+    console.log("after list",middlewares);
+    if (err)
+      return res.status(403).send('query middleware configuaration error');
+    else
+    {
+      return res.status(200).send("update success");
+    }
+  });
 
 });
 
