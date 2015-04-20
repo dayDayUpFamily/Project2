@@ -3,14 +3,14 @@
  */
 
 var AWS = require('aws-sdk');
-var sns = new AWS.SNS({credentials: new AWS.SharedIniFileCredentials(), region: 'us-east-1'});
+var sns = new AWS.SNS({credentials: new AWS.SharedIniFileCredentials(), region: 'us-west-2'});
 var logging = require('./logging')
 
 module.exports = function (err, req, res, next) {
     console.log('Error at time:', new Date());
     console.log(err);
     logging.logging2sqs("myQueue", "ERROR: "+req.url+"  "+req.method+"  "+err);  // error logging
-    // publish(err.message);  // SNS
+     publish(err.message);  // SNS
 
     // console.log("headers   "+res.headers);
    /* res.status(err.statusCode || err.status || 500);
@@ -32,7 +32,7 @@ var publish = function snsPublish(message) {
         if (err) {
             console.log(err, err.stack);
         } else {
-            console.log('Published a SNS.');
+            console.log('Published a SNS.',message);
         }
     });
 };

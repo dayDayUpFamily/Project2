@@ -2,7 +2,7 @@
  * Created by yun on 4/4/15.
  */
 var AWS = require('aws-sdk');
-var sqs = new AWS.SQS({credentials: new AWS.SharedIniFileCredentials(), region: 'us-east-1'});
+var sqs = new AWS.SQS({credentials: new AWS.SharedIniFileCredentials(), region: 'us-west-2'});
 
 var logging2sqs = function (queue, message) {
     sqs.getQueueUrl( {QueueName: queue}, function(err, data) {

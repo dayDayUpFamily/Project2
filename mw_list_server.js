@@ -32,7 +32,7 @@ app.get('/mwlist/:biz_name', function (req, res) {
     {
       // console.log(19);
       for(i = 0; i < middlewares.length; i++)
-        beforeList.push(middlewares[i].mw_name);
+        beforeList.push(middlewares[i].mw_name+middlewares[i].priority);
       return callback(null,beforeList);
     }
   });
